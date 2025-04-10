@@ -1,60 +1,125 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.models import User
-from .forms import SignupForm, CustomAuthenticationForm, MandatoryPasswordChangeForm
+from django.core.cache import cache
+from django.views import View
+from .forms import LoginForm, SignupForm, MandatoryPasswordChangeForm
 from .models import Profile
 import datetime
+import logging
+
+# Configuration du logger
+logger = logging.getLogger(__name__)
 
 # Dictionnaire global pour bloquer temporairement les comptes (à améliorer avec cache ou base)
 login_attempts = {}
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = SignupForm(request.POST, request.FILES)
+
+class SignupView(View):
+    def get(self, request):
+        form = SignupForm()
+        return render(request, 'signup.html', {'form': form})
+
+    def post(self, request):
+        form = SignupForm(data=request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             user = User.objects.create_user(username=email, email=email, password=password)
             user.profile.pseudonyme = form.cleaned_data['pseudonyme']
             user.profile.avatar = form.cleaned_data['avatar']
+            form.clean()
             user.profile.must_change_password = True
             user.profile.save()
             login(request, user)
             return redirect('change_password')
-    else:
-        form = SignupForm()
-    return render(request, 'signup.html', {'form': form})
+        else:
+            messages.error(request, "Erreur lors de l'inscription.")
+            return render(request, 'signup.html', {'form': form})
+            
 
-def login_view(request):
-    ip = request.META.get('REMOTE_ADDR')
-    now = timezone.now()
-    attempts = login_attempts.get(ip, {'count': 0, 'blocked_until': None})
 
-    if attempts['blocked_until'] and now < attempts['blocked_until']:
-        wait_time = int((attempts['blocked_until'] - now).total_seconds() // 1)
-        return render(request, 'login_blocked.html', {'wait_time': wait_time})
+class LoginView(View):
+    def get(self, request):
+        check = self.check(request)
+        if check['blocked']:
+            return render(request, 'login_blocked.html', {'wait_time': check['cooldown']})
+        
+        form = LoginForm()
+        return render(request, 'login.html', {'form': form})
 
-    if request.method == 'POST':
-        form = CustomAuthenticationForm(request, data=request.POST)
+    def post(self, request):
+        check = self.check(request)
+        if check['blocked']:
+            return render(request, 'login_blocked.html', {'wait_time': check.cooldown})
+        
+        form = LoginForm(request, data=request.POST)
         if form.is_valid():
             login(request, form.get_user())
-            login_attempts[ip] = {'count': 0, 'blocked_until': None}
+            self.reset_login_attempts(check['ip'])
             if request.user.profile.must_change_password:
                 return redirect('change_password')
             return redirect('profile')
         else:
-            attempts['count'] += 1
-            if attempts['count'] >= 3:
-                attempts['blocked_until'] = now + datetime.timedelta(minutes=2)
-            login_attempts[ip] = attempts
+            self.increment_login_attempts(check['ip'])
             messages.error(request, "Nom d'utilisateur ou mot de passe invalide.")
-    else:
-        form = CustomAuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+            return render(request, 'login.html', {'form': form})
+
+    # Méthodes utilitaires
+    def get_ip(self, request):
+        return request.META.get('REMOTE_ADDR')
+
+    def get_login_attempts(self, ip):
+        cache_key = f'login_attempts_{ip}'
+        attempts = cache.get(cache_key)
+        if attempts is None:
+            attempts = {'count': 0 }
+            cache.set(cache_key, attempts)
+        return attempts
+
+    def set_login_attempts(self, ip, attempts):
+        cache_key = f'login_attempts_{ip}'
+        cache.set(cache_key, attempts, timeout=300)
+
+    def reset_login_attempts(self, ip):
+        cache_key = f'login_attempts_{ip}'
+        cache.delete(cache_key)
+
+    def increment_login_attempts(self, ip):
+        attempts = self.get_login_attempts(ip)
+        attempts['count'] += 1
+        logger.warning(f"Échec de connexion pour IP {ip}. Tentative n°{attempts['count']}")
+        
+        if attempts['count'] >= 3:
+            attempts['blocked_until'] = timezone.now() + datetime.timedelta(minutes=2)
+            logger.warning(f"Compte bloqué pour IP {ip} après 3 tentatives échouées")
+        
+        self.set_login_attempts(ip, attempts)
+        logger.info(f"Nouvel état du cache pour {ip}: {attempts}")
+
+    def check(self, request):
+        ip = self.get_ip(request)
+        attempts = self.get_login_attempts(ip)
+        if attempts['count'] > 3:
+            return {
+                'ip': ip,
+                'blocked': True,
+                'cooldown': 120
+            }
+        check_result = {
+            'ip': ip,
+            'blocked': False,
+        }
+        print(f"check_result: {check_result}")
+        return check_result
+
+    def get_wait_time(self, ip):
+        attempts = self.get_login_attempts(ip)
+        return int((attempts['cooldown'] - timezone.now()).total_seconds() // 1)
 
 def logout_view(request):
     logout(request)

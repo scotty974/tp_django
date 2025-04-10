@@ -2,8 +2,8 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 EXEMPT_URLS = [
-    '/users/login/',
-    '/users/signup/',
+    '/login/',
+    '/signup/',
     '/about/',
 ]
 
