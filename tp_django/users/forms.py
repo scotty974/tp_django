@@ -18,23 +18,14 @@ class LoginForm(AuthenticationForm):
             "password": None,
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].label = "Nom d'utilisateur"
-        self.fields['password'].label = "Mot de passe"
-        
     def clean(self):
         cleaned_data = super().clean()
-        
-        if self.is_valid():
-            remember_me = cleaned_data.get('remember_me', True)
-            
-            if remember_me:
-                self.request.session.set_expiry(1209600)  # 2 semaines
-            else:
-                self.request.session.set_expiry(0)  # Session expire à la fermeture du navigateur
-            
+        print("Données nettoyées:", cleaned_data)
         return cleaned_data
+    
+    def save(self):
+        user = super().save(commit=False)
+        return user
 
 
 class SignupForm(UserCreationForm):
@@ -47,6 +38,18 @@ class SignupForm(UserCreationForm):
             "password1":None,
             "password2":None,
     }
+        
+    def save(self):
+        user = super().save(commit=False)
+        user.save()
+        return user
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        print("Données nettoyées:", cleaned_data)
+        return cleaned_data
+
+
 
 
 class MandatoryPasswordChangeForm(PasswordChangeForm):

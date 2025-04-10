@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.LoginRequiredMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'tp_django.urls'
@@ -135,6 +137,15 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',  # Doit être en premier
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AXES_FAILURE_LIMIT = 3  # Nombre de tentatives avant blocage
+AXES_COOLOFF_TIME = 2  # Temps de blocage en minutes
+AXES_LOCKOUT_TEMPLATE = 'login_blocked.html'  # Template à afficher
 
 # Cache timeout for login attempts (in seconds)
 LOGIN_ATTEMPTS_CACHE_TIMEOUT = 300  # 5 minutes

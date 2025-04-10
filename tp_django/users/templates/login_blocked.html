@@ -1,7 +1,22 @@
-{% extends "base.html" %} {% block title %}Accès bloqué{% endblock %} {%block content %}
-<h2>⛔ Accès temporairement bloqué</h2>
-<p>
-	Vous avez dépassé le nombre d’essais. Merci de patienter {{ wait_time }}
-	secondes.
-</p>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="text-center">⛔ Accès bloqué</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p>Vous avez dépassé le nombre maximum de tentatives de connexion.</p>
+                        {# Note: axes_cooloff_time is not properly passed to the template, needs to be added to context in view #}
+                        <p>Veuillez réessayer dans {{ axes_cooloff_time }} minutes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
