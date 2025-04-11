@@ -22,7 +22,6 @@
 .game-container {
     display: flex;
     flex-direction: column;
-    max-width: 1000px;
     align-items: center;
 }
 
@@ -34,8 +33,6 @@
     flex-direction: column;
     align-items: center;
 }
-
-
 
 .game-illustration {
     width: 100%;
@@ -74,6 +71,59 @@
     width: 100%;
     margin-bottom: 1rem;
 }
+
+.game-persos-container {
+    margin-top: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+}
+
+.game-perso {
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    padding: 1em;
+    flex-direction: column;
+    width: 100%;
+    background-color: var(--light-color);
+}
+
+.perso-race {
+    position: absolute;
+    top: -30px;
+    right: 10px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 300;
+    color: var(--light-color);
+    padding: 0.5em;
+    border-radius: 4px;
+    background-color: #ab5b4d;
+}
+
+.game-infos {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.game-content {
+    display: flex;
+    width: 100%;
+    gap: 2em;
+}
+
+.game-title {
+    margin-top: 2em;
+    margin-bottom: 0.1em;
+}
+
+.game-story {
+    margin-top: 0.1em;
+    margin-bottom: 2em;
+}
+
+
 
 
 

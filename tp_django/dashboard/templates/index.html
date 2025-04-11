@@ -13,63 +13,40 @@
     </form>
   </div>
 
-<<<<<<< HEAD
   <div class="games-container">
     <div class="games-container-header">
       <h2>Jeux enregistrés</h2>
       <div class="header-line"></div>
     </div>
 
-    {% if games|length > 0 %}
-      {% for game in games %}
-        <div class="game-container">
-          <h3 class="game-title">{{ game.univers }}</h3>
-          <div class="game-content">
-            <p class="game-story">{{ game.story }}</p>
-            <img class="game-illustration" src="{{ game.illustration }}" />
-            <div class="game-perso">
-              {% if item.personnages %}
-              <ul>
-                {% for perso in item.personnages %}
-                  <li>
-                    <strong>{{ perso.name }}</strong> ({{ perso.race }}) : {{ perso.description }}
-                  </li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p>Aucun personnage pour ce jeu.</p>
-        >>>>>>> f952e196e65856c04beeec397e793ae92ff8c3db
-            {% endif %}
-          </div>
-        {% endfor %}
-            </p>
-          </div>
-       </div>
-      {% endfor %}
+    {% if games_with_personnages|length > 0 %}
+      {% for game in games_with_personnages %}
+        <div class="game-container">     
+            <h3 class="game-title">{{ game.game.univers }}</h3>
+            <p class="game-story">{{ game.game.story }}</p>
+            <div class="game-content">
 
-    {% else %}
+              <div class="game-infos">
+                <img class="game-illustration" src="{{ game.game.illustration }}" />
+              </div>
+  
+              <div class="game-persos-container">
+                {% for perso in game.personnages.all %}
+                  <div class="game-perso">
+                    <h4 class="perso-name">{{ perso.name }}</h4>
+                    <p class="perso-race">{{ perso.race }}</p>
+                    <p class="perso-description">{{ perso.description }}</p>
+                  </div>
+                {% endfor %}
+              </div>
+
+            </div>
+
+      {% endfor %}
+      {% else %}
     <p>Aucun jeu enregistré pour le moment.</p>
-=======
-  {% for item in games_with_personnages %}
-  <div class="game-block">
-    <h2>{{ item.game.title }}</h2>
-    <p>{{ item.game.story }}</p>
-    <p><strong>Univers :</strong> {{ item.game.univers }}</p>
-    <img src="{{ item.game.illustration }}" alt="Illustration">
-    {% if item.personnages %}
-      <ul>
-        {% for perso in item.personnages %}
-          <li>
-            <strong>{{ perso.name }}</strong> ({{ perso.race }}) : {{ perso.description }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>Aucun personnage pour ce jeu.</p>
->>>>>>> f952e196e65856c04beeec397e793ae92ff8c3db
     {% endif %}
   </div>
-{% endfor %}
 
 </div>
 {% endblock %}

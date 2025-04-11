@@ -52,15 +52,15 @@ class IndexView(LoginRequiredMixin, View):
         form = CreateGameForm()
         games = Game.objects.filter(user=request.user)
 
-        # Préparer les jeux avec leurs personnages
         games_with_personnages = []
+
         for game in games:
             persos = Personnage.objects.filter(game_id=game.id)
             games_with_personnages.append({
                 'game': game,
                 'personnages': persos
             })
-
+            
         context = {
             'form': form,
             'games_with_personnages': games_with_personnages
