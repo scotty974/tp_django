@@ -37,9 +37,8 @@
         <p class="text-sm text-gray-600">
           <strong>Story:</strong> {{ game.story }}
         </p>
-        <p class="text-sm text-gray-600">
-          <strong>Illustration:</strong> {{ game.illustration }}
-        </p>
+        <img src="{{ game.illustration }}" class="text-sm text-gray-600">
+        </img>
         <p class="text-sm text-gray-600">
           <strong>Personnages:</strong> {{ game.perso.all|join:", " }}
         </p>

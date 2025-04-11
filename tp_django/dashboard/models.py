@@ -14,8 +14,7 @@ class Game(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='games', null=True)
     univers = models.CharField(max_length=100)
     story = models.CharField(max_length=100)
-    perso = models.ManyToManyField(Personnage)
     illustration = models.URLField(max_length=1000)
+
     def __str__(self):
-        
         return self.univers
