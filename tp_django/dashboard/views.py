@@ -13,42 +13,34 @@ client = OpenAI()
 client.api_key = settings.OPENAI_API_KEY
 
 # Ton prompt
-prompt = """Tu es une IA spécialisée dans la création narrative pour jeux de rôle et jeux vidéo. Génère un univers original et cohérent selon les consignes suivantes :
+prompt = """Tu es une IA spécialisée dans la création narrative pour jeux de rôle et jeux vidéo. Génère un univers original et cohérent selon les consignes suivantes (en respectant des limites de 100 caractères pour chaque champ) :
 
 1. **Génération de l’univers** : 
-   - Décris un monde immersif avec une géographie unique, des factions, une histoire récente et ancienne, et des enjeux majeurs.
-   - Indique le genre (fantasy, post-apo, SF, etc.) et le ton (dramatique, sombre, épique, etc.).
+   - Décris brièvement un monde immersif avec une géographie unique, des factions, une histoire récente et ancienne, et des enjeux majeurs.
+   - Le texte de l'univers doit faire moins de 100 caractères.
 
-2. **Création d’un scénario en 3 actes** :
-   - Acte 1 : Présente les personnages, le monde et une situation de départ.
-   - Acte 2 : Introduis un retournement narratif majeur qui bouleverse la mission initiale.
-   - Acte 3 : Résolution dramatique (ouverte ou fermée).
-   - Le scénario doit être structuré, rythmé, avec des conflits internes et externes.
 
 3. **Élaboration de 2 à 4 personnages** :
    Pour chaque personnage, indique :
    - Nom
-   - Classe ou type (ex: mercenaire, magicien, scientifique…)
-   - Rôle narratif (héros, rival, mentor…)
-   - Background personnel
-   - Objectifs et relations avec les autres personnages
-   - Style de gameplay associé (furtif, tank, contrôle mental, etc.)
+   - Race
+   - Description (doit être courte, moins de 100 caractères)
 
-4. **Création de lieux emblématiques** :
-   - Décris au moins 3 lieux clés de l’univers avec des détails sensoriels (visuels, sonores, historiques).
-   - Ces lieux doivent jouer un rôle narratif important.
+4. **Illustration de l’histoire** :
+   Génère une illustration pour l'histoire du jeu, en utilisant un style visuel cohérent avec le genre et l'ambiance du jeu. L’image doit être générée et renvoyée sous forme d'URL.
 
-Donne la réponse dans un format structuré en json pour faciliter son intégration dans un outil ou moteur de jeu, la structure doit respecter ce json ne modifie aucun champ, ne rajoute aucun champ, contente toi de remplir : 
-
+Voici un format structuré en JSON, limite les caractères à 100 pour chaque champ et inclut un lien vers l’illustration :
+pour l'illustration il ne doit pas dépasser les 100 characteres 
 {
-    game:{
-        univers:"",
-        story: "",
+    game: {
+        univers: "Le monde de X, ravagé par des guerres. Un royaume perdu sous des nuages éternels.",
+        story: "Les héros doivent sauver un artefact ancien. Mais d'autres veulent le pouvoir.",
         perso: [{
-            name: "",
-            race: "",
-            description: ""
-            }],
+            name: "Zora",
+            race: "Humaine",
+            description: "Messagère des terres oubliées, elle protège les secrets du passé."
+        }],
+        illustration: ""
     }
 }
 """
@@ -63,6 +55,7 @@ class IndexView(LoginRequiredMixin, View):
             'form': form,
             'games': games
         }
+        print(context)
         return render(request, 'index.html', context)
 
     def post(self, request):
@@ -73,7 +66,7 @@ class IndexView(LoginRequiredMixin, View):
             # Générer un prompt plus spécifique à partir des données du formulaire (si nécessaire)
             custom_prompt = prompt + f"\n\nInformations sur le jeu : {game_data}"
 
-            # Effectuer la requête à l'API OpenAI avec le format attendu (messages)
+            # Effectuer la requête à l'API OpenAI pour générer des éléments narratifs
             response = client.chat.completions.create(
                 model="chatgpt-4o-latest",  # Utilise ici un modèle compatible
                 messages=[
@@ -81,28 +74,61 @@ class IndexView(LoginRequiredMixin, View):
                     {"role": "user", "content": custom_prompt}
                 ],
                 max_completion_tokens=1000,
+                response_format={"type": "json_object"}
             )
 
-            # Récupérer le contenu généré
+            # Récupérer le contenu généré pour les éléments narratifs
             generated_content = response.choices[0].message.content
-            print(generated_content)
 
             try:
-                # Convertir le contenu JSON généré en dictionnaire Python
                 generated_data = json.loads(generated_content)
-            except json.JSONDecodeError:
-                # Si le contenu généré n'est pas un JSON valide
-                return render(request, 'index.html', {'error': 'Le contenu généré n\'est pas au format JSON valide.'})
-            
+            except json.JSONDecodeError as e:
+                print(f"Erreur de parsing JSON : {e}")
+                print(f"Contenu généré : {generated_content}")
+                return render(request, 'index.html', {'error': 'Erreur de parsing JSON'})
+
+            # Générer une illustration via DALL·E pour l'histoire
+            illustration = self.generate_illustration(generated_data)
+
+            # Ajouter l'URL de l'illustration dans les données générées
+            generated_data['game']['illustration'] = illustration
+
+            # Ajouter l'ID de l'utilisateur connecté
+            generated_data['game']['user'] = request.user.id
+
             # Passer les données analysées au serializer
             serializer = GameSerializer(data=generated_data['game'], context={'request': request})
+            print(generated_data['game'])
+            print(serializer.is_valid())
+            print(serializer.error_messages)
+            print(serializer.errors)
             if serializer.is_valid():
-                print('caca')
                 game = serializer.save()  # Sauvegarde du jeu créé
-                return render(request, 'index.html', {'game': game})
+                return render(request, 'index.html', {'games': game})
             else:
                 # Afficher les erreurs de validation du serializer
-                print(serializer.errors)
                 return render(request, 'index.html', {'error': 'Erreur de validation', 'details': serializer.errors})
 
         return render(request, 'index.html')
+
+    def generate_illustration(self, generated_data):
+        """
+        Fonction pour générer une illustration pour l'histoire du jeu.
+        """
+        # Générer une illustration pour l'histoire
+        story_prompt = f"Illustration de l'histoire : {generated_data['game']['story']}"
+        return self.create_image_from_prompt(story_prompt)
+
+    def create_image_from_prompt(self, prompt):
+        """
+        Fonction pour appeler l'API de génération d'images (comme DALL·E) et obtenir l'URL de l'image.
+        """
+        # Appel à l'API OpenAI pour générer une image
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            n=1,
+            size="1024x1024"
+        )
+        return response.data[0].url
+

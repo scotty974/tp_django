@@ -15,6 +15,7 @@ class Game(models.Model):
     univers = models.CharField(max_length=100)
     story = models.CharField(max_length=100)
     perso = models.ManyToManyField(Personnage)
-    illustration = models.CharField(max_length=100)
+    illustration = models.URLField(max_length=1000)
     def __str__(self):
+        
         return self.univers
