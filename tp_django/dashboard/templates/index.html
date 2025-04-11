@@ -13,6 +13,7 @@
     </form>
   </div>
 
+<<<<<<< HEAD
   <div class="games-container">
     <div class="games-container-header">
       <h2>Jeux enregistrés</h2>
@@ -48,6 +49,24 @@
 
     {% else %}
     <p>Aucun jeu enregistré pour le moment.</p>
+=======
+  {% for item in games_with_personnages %}
+  <div class="game-block">
+    <h2>{{ item.game.title }}</h2>
+    <p>{{ item.game.story }}</p>
+    <p><strong>Univers :</strong> {{ item.game.univers }}</p>
+    <img src="{{ item.game.illustration }}" alt="Illustration">
+    {% if item.personnages %}
+      <ul>
+        {% for perso in item.personnages %}
+          <li>
+            <strong>{{ perso.name }}</strong> ({{ perso.race }}) : {{ perso.description }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Aucun personnage pour ce jeu.</p>
+>>>>>>> f952e196e65856c04beeec397e793ae92ff8c3db
     {% endif %}
   </div>
 {% endfor %}
