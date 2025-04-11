@@ -18,7 +18,6 @@ class LoginForm(AuthenticationForm):
             "password": None,
         }
 
-
 class SignupForm(UserCreationForm):
     class Meta:
         model = User
@@ -29,9 +28,6 @@ class SignupForm(UserCreationForm):
             "password1":None,
             "password2":None,
     }
-
-
-
 
 class MandatoryPasswordChangeForm(PasswordChangeForm):
     pass

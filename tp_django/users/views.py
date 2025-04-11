@@ -34,7 +34,7 @@ class LoginView(View):
         if form.is_valid():
             login(request, form.get_user())
             logger.info(f"Connexion réussie pour l'utilisateur {form.get_user().username}")
-            return redirect('profile')
+            return redirect('login')
         else:
             messages.error(request, "Nom d'utilisateur ou mot de passe invalide.")
             return render(request, 'login.html', {'form': form})
@@ -42,10 +42,6 @@ class LoginView(View):
 def logout_view(request):
     logout(request)
     return redirect('login')
-
-@login_required
-def profile_view(request):
-    return render(request, 'profile.html')
 
 @login_required
 def change_password_view(request):
