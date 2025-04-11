@@ -5,19 +5,14 @@
 		<meta charset="UTF-8" />
 		<title>{% block title %}SecureAuth{% endblock %}</title>
 		<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+		<link rel="stylesheet" href="{% static 'css/form.css' %}" />
+		<link rel="stylesheet" href="{% static 'css/inputs.css' %}" />
+		<link rel="stylesheet" href="{% static 'css/button.css' %}" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	</head>
 	<body>
-		<nav>
-			<div class="nav-container">
-				<a href="{% url 'profile' %}">🏠 Accueil</a>
-				{% if user.is_authenticated %}
-				<a href="{% url 'logout' %}">🔓 Déconnexion</a>
-				{% else %}
-				<a href="{% url 'login' %}">🔐 Connexion</a>
-				<a href="{% url 'signup' %}">📝 Inscription</a>
-				{% endif %}
-			</div>
-		</nav>
 		<main>
 			{% if messages %}
 			<ul class="messages">

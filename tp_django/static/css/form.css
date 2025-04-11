@@ -1,0 +1,25 @@
+form {
+	max-width: 400px;
+	display: flex;
+    background-color: #f0e6e4;
+	flex-direction: column;
+	align-items: center;
+    padding: 2em;
+    border-radius: 1em;
+}
+
+form p {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+
+#bottom-hint {
+    margin-top: 3em;
+    text-align: center;
+}
+
+#bottom-hint a {
+	color: var(--accent-color);
+}
