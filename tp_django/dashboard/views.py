@@ -51,12 +51,22 @@ class IndexView(LoginRequiredMixin, View):
     def get(self, request):
         form = CreateGameForm()
         games = Game.objects.filter(user=request.user)
+
+        # Préparer les jeux avec leurs personnages
+        games_with_personnages = []
+        for game in games:
+            persos = Personnage.objects.filter(game_id=game.id)
+            games_with_personnages.append({
+                'game': game,
+                'personnages': persos
+            })
+
         context = {
             'form': form,
-            'games': games
+            'games_with_personnages': games_with_personnages
         }
-        print(context)
         return render(request, 'index.html', context)
+
 
     def post(self, request):
         form = CreateGameForm(request.POST)
@@ -111,6 +121,7 @@ class IndexView(LoginRequiredMixin, View):
 
         return render(request, 'index.html')
 
+    
     def generate_illustration(self, generated_data):
         """
         Fonction pour générer une illustration pour l'histoire du jeu.
@@ -131,4 +142,27 @@ class IndexView(LoginRequiredMixin, View):
             size="1024x1024"
         )
         return response.data[0].url
+    
+    
 
+
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+class GamePersonnagesView(LoginRequiredMixin, View):
+    def get(self, request, game_id):
+        game = get_object_or_404(Game, id=game_id, user=request.user)
+        personnages = Personnage.objects.filter(game=game)
+        
+        # Tu peux soit renvoyer en JSON, soit renvoyer un template HTML
+        data = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "race": p.race,
+                "description": p.description
+            } for p in personnages
+        ]
+        return JsonResponse(data, safe=False)

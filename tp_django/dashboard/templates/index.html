@@ -26,7 +26,22 @@
           <div class="game-content">
             <p class="game-story">{{ game.story }}</p>
             <img class="game-illustration" src="{{ game.illustration }}" />
-            <p class="game-perso">{{ game.perso.all|join:", " }}</p>
+            <div class="game-perso">
+              {% if item.personnages %}
+              <ul>
+                {% for perso in item.personnages %}
+                  <li>
+                    <strong>{{ perso.name }}</strong> ({{ perso.race }}) : {{ perso.description }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p>Aucun personnage pour ce jeu.</p>
+        >>>>>>> f952e196e65856c04beeec397e793ae92ff8c3db
+            {% endif %}
+          </div>
+        {% endfor %}
+            </p>
           </div>
        </div>
       {% endfor %}
@@ -35,6 +50,8 @@
     <p>Aucun jeu enregistré pour le moment.</p>
     {% endif %}
   </div>
+{% endfor %}
+
 </div>
 {% endblock %}
 
