@@ -25,30 +25,26 @@
     </form>
   </div>
 
-  <!-- Liste des jeux existants -->
-  <div class="bg-white shadow-md rounded-lg p-6">
-    <h2 class="text-2xl font-semibold mb-4">Jeux enregistrés</h2>
-
-    {% if games|length > 0 %}
-    <ul class="divide-y divide-gray-200">
-      {% for game in games %}
-      <li class="py-4">
-        <h3 class="text-xl font-semibold text-blue-700">{{ game.univers }}</h3>
-        <p class="text-sm text-gray-600">
-          <strong>Story:</strong> {{ game.story }}
-        </p>
-        <img src="{{ game.illustration }}" class="text-sm text-gray-600">
-        </img>
-        <p class="text-sm text-gray-600">
-          <strong>Personnages:</strong> {{ game.perso.all|join:", " }}
-        </p>
-      </li>
-      {% endfor %}
-    </ul>
+  {% for item in games_with_personnages %}
+  <div class="game-block">
+    <h2>{{ item.game.title }}</h2>
+    <p>{{ item.game.story }}</p>
+    <p><strong>Univers :</strong> {{ item.game.univers }}</p>
+    <img src="{{ item.game.illustration }}" alt="Illustration">
+    {% if item.personnages %}
+      <ul>
+        {% for perso in item.personnages %}
+          <li>
+            <strong>{{ perso.name }}</strong> ({{ perso.race }}) : {{ perso.description }}
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-    <p class="text-gray-500">Aucun jeu enregistré pour le moment.</p>
+      <p>Aucun personnage pour ce jeu.</p>
     {% endif %}
   </div>
+{% endfor %}
+
 </div>
 {% endblock %}
 
