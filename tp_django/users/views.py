@@ -34,7 +34,7 @@ class LoginView(View):
         if form.is_valid():
             login(request, form.get_user())
             logger.info(f"Connexion réussie pour l'utilisateur {form.get_user().username}")
-            return redirect('login')
+            return redirect('dashboard')
         else:
             messages.error(request, "Nom d'utilisateur ou mot de passe invalide.")
             return render(request, 'login.html', {'form': form})

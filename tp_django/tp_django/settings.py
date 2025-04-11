@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'axes',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -146,7 +147,7 @@ AUTHENTICATION_BACKENDS = [
 AXES_FAILURE_LIMIT = 3  # Nombre de tentatives avant blocage
 AXES_COOLOFF_TIME = 2  # Temps de blocage en minutes
 AXES_LOCKOUT_TEMPLATE = 'login_blocked.html'  # Template à afficher
-
+LOGIN_URL = '/login/'  # facultatif, sinon ça prend settings.LOGIN_URL
 # Cache timeout for login attempts (in seconds)
 LOGIN_ATTEMPTS_CACHE_TIMEOUT = 300  # 5 minutes
 
