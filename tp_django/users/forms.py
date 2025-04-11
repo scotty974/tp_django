@@ -18,15 +18,6 @@ class LoginForm(AuthenticationForm):
             "password": None,
         }
 
-    def clean(self):
-        cleaned_data = super().clean()
-        print("Données nettoyées:", cleaned_data)
-        return cleaned_data
-    
-    def save(self):
-        user = super().save(commit=False)
-        return user
-
 
 class SignupForm(UserCreationForm):
     class Meta:
@@ -38,16 +29,6 @@ class SignupForm(UserCreationForm):
             "password1":None,
             "password2":None,
     }
-        
-    def save(self):
-        user = super().save(commit=False)
-        user.save()
-        return user
-        
-    def clean(self):
-        cleaned_data = super().clean()
-        print("Données nettoyées:", cleaned_data)
-        return cleaned_data
 
 
 

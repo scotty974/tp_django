@@ -3,11 +3,8 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
-from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.views import View
 from .forms import LoginForm, SignupForm, MandatoryPasswordChangeForm
-import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,9 +17,8 @@ class SignupView(View):
     def post(self, request):
         form = SignupForm(data=request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('profile')
+            form.save()
+            return redirect('login')
         else:
             messages.error(request, "Erreur lors de l'inscription.")
             return render(request, 'signup.html', {'form': form})
